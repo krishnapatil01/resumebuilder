@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Tracking | AutoResume AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#2d1a47"/>
+                <path d="M10 12C10 10.8954 10.8954 10 12 10H28C29.1046 10 30 10.8954 30 12V28C30 29.1046 29.1046 30 28 30H12C10.8954 30 10 29.1046 10 28V12Z" fill="#ff6b6b"/>
+                <path d="M15 15H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 20H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 25H21" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            AutoResume
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="builder.html">Resume Builder</a>
+            <a href="upload.html">Resume AI</a>
+            <a href="tracking.html" class="active">Job Tracking</a>
+        </div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn btn-login">Logout</a>
+        </div>
+        <div class="menu-toggle" onclick="document.getElementById('navbar').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1><i class="fas fa-list-check"></i> Job Tracking</h1>
+                <p style="color: var(--text-muted);">Manage your applications and interview processes.</p>
+            </div>
+            <button class="btn btn-primary" id="addJobBtn">
+                <i class="fas fa-plus"></i> Add Application
+            </button>
+        </div>
+
+        <div class="card">
+            <table id="jobsTable">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Platform</th>
+                        <th>Fit Score</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="jobsBody">
+                    <!-- Data injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for adding job (previously jobModal) -->
+    <div id="jobModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; align-items: center; justify-content: center;">
+        <!-- ... existing form ... -->
+        <div class="card" style="width: 90%; max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Add New Job Application</h3>
+                <button id="closeJobModal" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem;">&times;</button>
+            </div>
+            <form id="jobForm">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" id="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Role</label>
+                        <input type="text" id="role" required>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Platform</label>
+                        <select id="platform">
+                            <option>LinkedIn</option>
+                            <option>Indeed</option>
+                            <option>Naukri</option>
+                            <option>Direct</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="status">
+                            <option>Applied</option>
+                            <option>Interview</option>
+                            <option>Rejected</option>
+                            <option>Offer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Job Description (for ATS analysis)</label>
+                    <textarea id="jobDescription" rows="4" placeholder="Paste the job description here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save & Analyze</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Analysis Details -->
+    <div id="analysisModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1100; align-items: center; justify-content: center;">
+        <div class="card" style="width: 95%; max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2><i class="fas fa-chart-pie" style="color: var(--primary);"></i> Detailed ATS Evaluation</h2>
+                <button id="closeAnalysisModal" style="background: none; border: none; color: white; cursor: pointer; font-size: 2rem;">&times;</button>
+            </div>
+
+            <div id="analysisContent">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allJobs = [];
+
+        async function loadJobs() {
+            const res = await fetch('/api/jobs/all');
+            allJobs = await res.json();
+            const body = document.getElementById('jobsBody');
+            body.innerHTML = allJobs.map(job => `
+                <tr>
+                    <td><strong>${job.companyName}</strong></td>
+                    <td>${job.role}</td>
+                    <td><span class="status-badge">${job.status}</span></td>
+                    <td>${job.platform}</td>
+                    <td><span class="score-badge ${getScoreClass(job.fitScore)}">${job.fitScore || '-'}%</span></td>
+                    <td>${job.appliedDate}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.8rem;">
+                            <button onclick="viewAnalysis(${job.id})" style="background: none; border: none; color: var(--primary); cursor: pointer;" title="View Analysis">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="deleteJob(${job.id})" style="background: none; border: none; color: var(--error); cursor: pointer;" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewAnalysis(id) {
+            const job = allJobs.find(j => j.id === id);
+            if (!job || !job.fitScore) {
+                alert("No analysis available for this application. Ensure you provided a JD.");
+                return;
+            }
+
+            const breakdown = JSON.parse(job.breakdown || '{}');
+            const suggestions = JSON.parse(job.suggestions || '[]');
+            
+            const content = document.getElementById('analysisContent');
+            content.innerHTML = `
+                <div class="summary-box">
+                    <h3>Overall Evaluation: ${job.fitScore}%</h3>
+                    <p>${job.evaluationSummary || 'No summary available.'}</p>
+                </div>
+
+                <h3 style="margin-bottom: 1rem;">Score Breakdown</h3>
+                <div class="parameter-list">
+                    ${Object.entries(breakdown).map(([key, val]) => `
+                        <div class="parameter-item">
+                            <h4>${key}</h4>
+                            <div class="score">${val} / ${getParameterMax(key)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <h3 style="margin-bottom: 1rem;">Improvement Suggestions</h3>
+                <div class="suggestion-list">
+                    ${suggestions.map(s => `
+                        <div class="suggestion-item">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>${s}</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="grid-2" style="margin-top: 2rem;">
+                    <div>
+                        <h4 style="color: var(--text-muted); margin-bottom: 0.5rem;">Matched Keywords</h4>
+                        <p style="font-size: 0.9rem; line-height: 1.6;">${job.matchedKeywords || 'None'}</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--error); margin-bottom: 0.5rem;">Missing Skills/Keywords</h4>
+                        <p style="font-size: 0.9rem; line-height: 1.6;">${job.missingSkills || 'None'}</p>
+                    </div>
+                </div>
+            `;
+
+            toggleModal('analysisModal', true);
+        }
+
+        function getParameterMax(key) {
+            const weights = {
+                "Keyword Relevance": 40,
+                "Technical Competency": 20,
+                "Work Impact": 15,
+                "Education": 10,
+                "Action Verbs": 5,
+                "ATS Readability": 5,
+                "Completeness": 5
+            };
+            return weights[key] || 100;
+        }
+
+        function getScoreClass(score) {
+            if(!score) return '';
+            if(score > 75) return 'score-high';
+            if(score > 50) return 'score-med';
+            return 'score-low';
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        async function loadJobs() {
+            const res = await fetch('/api/jobs/all');
+            allJobs = await res.json();
+            const body = document.getElementById('jobsBody');
+            body.innerHTML = allJobs.map(job => `
+                <tr>
+                    <td><strong>${job.companyName}</strong></td>
+                    <td>${job.role}</td>
+                    <td><span class="status-badge">${job.status}</span></td>
+                    <td>${job.platform}</td>
+                    <td><span class="score-badge ${getScoreClass(job.fitScore)}">${job.fitScore || '-'}%</span></td>
+                    <td>${job.appliedDate}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.8rem;">
+                            <button onclick="viewAnalysis(${job.id})" style="background: none; border: none; color: var(--primary); cursor: pointer;" title="View Analysis">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="deleteJob(${job.id})" style="background: none; border: none; color: var(--error); cursor: pointer;" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteJob(id) {
+            if(confirm('Are you sure you want to delete this application?')) {
+                await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
+                loadJobs();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Modal Toggles
+            document.getElementById('addJobBtn').onclick = () => toggleModal('jobModal', true);
+            document.getElementById('closeJobModal').onclick = () => toggleModal('jobModal', false);
+            document.getElementById('closeAnalysisModal').onclick = () => toggleModal('analysisModal', false);
+
+            // Form Submit
+            document.getElementById('jobForm').onsubmit = async (e) => {
+                e.preventDefault();
+                const jobData = {
+                    companyName: document.getElementById('companyName').value,
+                    role: document.getElementById('role').value,
+                    platform: document.getElementById('platform').value,
+                    status: document.getElementById('status').value,
+                    jobDescription: document.getElementById('jobDescription').value
+                };
+
+                try {
+                    await fetch('/api/jobs/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(jobData)
+                    });
+                    toggleModal('jobModal', false);
+                    loadJobs();
+                    e.target.reset();
+                } catch (err) {
+                    alert("Error saving application. Please try again.");
+                }
+            };
+
+            loadJobs();
+        });
+    </script>
+</body>
+</html>

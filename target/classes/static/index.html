@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoResume AI | Build a job-winning resume for free</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#2d1a47"/>
+                <path d="M10 12C10 10.8954 10.8954 10 12 10H28C29.1046 10 30 10.8954 30 12V28C30 29.1046 29.1046 30 28 30H12C10.8954 30 10 29.1046 10 28V12Z" fill="#ff6b6b"/>
+                <path d="M15 15H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 20H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 25H21" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            AutoResume
+        </a>
+        <div class="nav-links">
+            <a href="#templates">Resume Templates</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#about">About</a>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-login" onclick="openModal()">Login</button>
+            <a href="dashboard.html" class="btn btn-start">Start now</a>
+        </div>
+        <div class="menu-toggle" onclick="document.getElementById('navbar').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content fade-up">
+                <h4 style="color: var(--secondary)">AI-POWERED CAREER WIZARD</h4>
+                <h1>Build a job-winning resume for free</h1>
+                <p>
+                    Your first resume is 100% free forever. 
+                    Unlimited downloads. No hidden fees. 
+                    Get the edge you need! 🚀
+                </p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="dashboard.html" class="btn btn-start btn-large">Get started for free ✨</a>
+                    <button class="btn btn-outline btn-large" onclick="openModal('signup')">Sign Up</button>
+                </div>
+                
+                <div class="trust-section" style="margin-top: 3rem;">
+                    <div class="user-avatars">
+                        <img src="https://i.pravatar.cc/100?u=12" alt="User">
+                        <img src="https://i.pravatar.cc/100?u=23" alt="User">
+                        <img src="https://i.pravatar.cc/100?u=34" alt="User">
+                        <img src="https://i.pravatar.cc/100?u=45" alt="User">
+                    </div>
+                    <div class="trust-text">Trusted by thousands of professionals</div>
+                </div>
+            </div>
+            <div class="hero-visual fade-up" style="animation-delay: 0.2s;">
+                <!-- CSS Resume Mockup instead of Image -->
+                <div style="background: rgba(30, 41, 59, 0.9); border: 1px solid var(--glass-border); border-radius: 15px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: rotate(2deg); width: 100%; max-width: 400px; margin: 0 auto; min-height: 500px;">
+                    <div style="display: flex; align-items: center; gap: 1rem; border-bottom: 2px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-user-tie"></i></div>
+                        <div>
+                            <div style="height: 12px; width: 120px; background: var(--text); border-radius: 6px; margin-bottom: 6px;"></div>
+                            <div style="height: 8px; width: 80px; background: var(--text-muted); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                        <div>
+                            <div style="height: 8px; width: 40px; background: var(--primary); border-radius: 4px; margin-bottom: 10px;"></div>
+                            <div style="height: 6px; width: 100%; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px;"></div>
+                            <div style="height: 6px; width: 80%; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px;"></div>
+                            <div style="height: 6px; width: 90%; background: rgba(255,255,255,0.1); border-radius: 3px;"></div>
+                        </div>
+                        <div>
+                            <div style="height: 8px; width: 60px; background: var(--secondary); border-radius: 4px; margin-bottom: 10px;"></div>
+                            <div style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--primary); margin-bottom: 10px;">
+                                <div style="height: 6px; width: 50%; background: rgba(255,255,255,0.5); border-radius: 3px; margin-bottom: 6px;"></div>
+                                <div style="height: 4px; width: 100%; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 3px;"></div>
+                                <div style="height: 4px; width: 80%; background: rgba(255,255,255,0.1); border-radius: 2px;"></div>
+                            </div>
+                            <div style="padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--success);">
+                                <div style="height: 6px; width: 60%; background: rgba(255,255,255,0.5); border-radius: 3px; margin-bottom: 6px;"></div>
+                                <div style="height: 4px; width: 90%; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 3px;"></div>
+                                <div style="height: 4px; width: 70%; background: rgba(255,255,255,0.1); border-radius: 2px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="templates" style="padding: 4rem 8%;">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="font-size: 2.5rem; color: var(--primary);">Professional Resume Templates</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 1rem auto;">Choose from industry-approved layouts designed by hiring managers and ATS experts.</p>
+            </div>
+            <div class="grid-3">
+                <div class="card" style="text-align:center;">
+                    <h3 style="margin-bottom: 1rem;">Classic Professional</h3>
+                    <div style="height:200px; background:rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius:10px; display: flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-file-alt" style="font-size: 4rem; color: var(--text-muted); opacity: 0.5;"></i>
+                    </div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h3 style="margin-bottom: 1rem;">Modern ATS</h3>
+                    <div style="height:200px; background:rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius:10px; display: flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-file-code" style="font-size: 4rem; color: var(--text-muted); opacity: 0.5;"></i>
+                    </div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <h3 style="margin-bottom: 1rem;">Creative Portfolio</h3>
+                    <div style="height:200px; background:rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius:10px; display: flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-file-image" style="font-size: 4rem; color: var(--text-muted); opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="pricing" style="padding: 6rem 8%; background: rgba(0,0,0,0.2);">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="font-size: 2.5rem;">Transparent Pricing</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">No paywalls, no surprises.</p>
+            </div>
+            <div class="card" style="max-width: 450px; margin: 0 auto; text-align: center; border: 2px solid var(--primary);">
+                <div style="background: var(--primary); color: white; padding: 0.5rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 1rem;">MOST POPULAR</div>
+                <h3>Standard Plan</h3>
+                <p style="font-size: 3.5rem; font-weight: 800; margin: 1.5rem 0;">$0<span style="font-size: 1rem; color: var(--text-muted); font-weight: 400;"> /forever</span></p>
+                <ul style="text-align: left; margin: 2rem 0; padding-left: 2rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.8rem;">
+                    <li><i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i> Unlimited PDF downloads</li>
+                    <li><i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i> AI Job Matcher tool</li>
+                    <li><i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i> Job application tracker</li>
+                    <li><i class="fas fa-check" style="color: var(--success); margin-right: 0.5rem;"></i> Premium templates</li>
+                </ul>
+                <button class="btn btn-start" style="width: 100%;" onclick="openModal('signup')">Create Free Account</button>
+            </div>
+        </section>
+
+        <section id="about" style="padding: 6rem 8%; text-align: center;">
+            <div class="card" style="max-width: 800px; margin: 0 auto; background: transparent; border: none; box-shadow: none;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">About AutoResume AI</h2>
+                <p style="color: var(--text-muted); font-size: 1.2rem; line-height: 1.8; margin-bottom: 2rem;">
+                    Our mission is to help professionals focus on what they do best, while our AI handles the formatting, presentation, and ATS optimization. By providing entirely free premium features, we empower job seekers worldwide to land their dream roles.
+                </p>
+                <a href="#templates" class="btn btn-outline">Explore Templates</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Login/Signup Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            
+            <div id="authEmailForm" style="display:none; text-align: left; margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="you@example.com" id="authEmail">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••" id="authPass">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="submitAuth()" id="authSubmitBtn">Login</button>
+                <div style="text-align: center; margin: 1rem 0; color: var(--text-muted);">OR</div>
+            </div>
+
+            <div class="auth-buttons">
+                <button class="btn-auth" onclick="handleAuth('Google')">
+                    <i class="fab fa-google" style="color: #ea4335"></i>
+                    <span id="googleBtnText">Continue with Google</span>
+                </button>
+                <button class="btn-auth" onclick="toggleEmailAuth()" id="emailToggleBtn">
+                    <i class="fas fa-envelope"></i>
+                    <span id="emailBtnText">Continue with Email</span>
+                </button>
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                Don't have an account? <span onclick="switchMode('signup')">Sign up</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'login';
+        
+        function openModal(mode = 'login') {
+            document.getElementById('authModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            switchMode(mode);
+        }
+
+        function closeModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('authEmailForm').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('authModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            if (mode === 'signup') {
+                document.getElementById('modalTitle').innerText = 'Create an Account';
+                document.getElementById('googleBtnText').innerText = 'Sign up with Google';
+                document.getElementById('emailBtnText').innerText = 'Sign up with Email';
+                document.getElementById('authSubmitBtn').innerText = 'Sign Up';
+                document.getElementById('modalFooter').innerHTML = `Already have an account? <span onclick="switchMode('login')">Login</span>`;
+            } else {
+                document.getElementById('modalTitle').innerText = 'Welcome Back';
+                document.getElementById('googleBtnText').innerText = 'Continue with Google';
+                document.getElementById('emailBtnText').innerText = 'Continue with Email';
+                document.getElementById('authSubmitBtn').innerText = 'Login';
+                document.getElementById('modalFooter').innerHTML = `Don't have an account? <span onclick="switchMode('signup')">Sign up</span>`;
+            }
+        }
+
+        function toggleEmailAuth() {
+            const form = document.getElementById('authEmailForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function submitAuth() {
+            handleAuth('Email', true);
+        }
+
+        function handleAuth(provider, isEmailSubmit = false) {
+            console.log(currentMode + ' with ' + provider);
+            const btn = isEmailSubmit ? document.getElementById('authSubmitBtn') : event.currentTarget;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Please wait...';
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 800);
+        }
+
+        window.onscroll = function() {
+            const nav = document.getElementById('navbar');
+            if (window.pageYOffset > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        };
+    </script>
+</body>
+</html>

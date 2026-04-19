@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Resume Wizard | AutoResume AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        .step-container { display: none; }
+        .step-container.active { display: block; animation: slideUp 0.4s ease-out; }
+        
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .wizard-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            z-index: 1;
+        }
+        .step-node {
+            width: 40px;
+            height: 40px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .step-node.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        
+        .reorder-item {
+            display: flex;
+            align-items: center; gap: 1rem;
+            background: rgba(255,255,255,0.03);
+            padding: 1rem; border-radius: 10px; margin-bottom: 1rem;
+            border: 1px solid var(--glass-border);
+        }
+        .reorder-handle { color: var(--text-muted); cursor: grab; padding: 0 0.5rem; }
+        
+        .segment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem; margin-top: 1.5rem;
+        }
+        .segment-tile {
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            padding: 1.5rem; border-radius: 12px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+            position: relative;
+        }
+        .segment-tile:hover {
+            border-color: var(--primary); transform: translateY(-5px);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .segment-tile.active {
+            border-color: var(--success); background: rgba(34, 197, 94, 0.05);
+        }
+        .check-badge { position: absolute; top: 10px; right: 10px; color: var(--success); display: none; }
+        .segment-tile.active .check-badge { display: block; }
+
+        .pill-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem;
+            cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s;
+        }
+        .pill-btn:hover { background: var(--primary); border-color: var(--primary); }
+
+        .editor-row {
+            background: rgba(255,255,255,0.02); padding: 1.5rem; border-radius: 12px;
+            margin-bottom: 1rem; border: 1px solid var(--glass-border);
+        }
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        /* Print Preview */
+        #printArea {
+            display: none; background: white; color: black;
+            padding: 40px; min-height: 297mm;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="printArea"></div>
+
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#2d1a47"/>
+                <path d="M10 12C10 10.8954 10.8954 10 12 10H28C29.1046 10 30 10.8954 30 12V28C30 29.1046 29.1046 30 28 30H12C10.8954 30 10 29.1046 10 28V12Z" fill="#ff6b6b"/>
+                <path d="M15 15H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 20H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 25H21" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            AutoResume
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="builder.html" class="active">Resume Builder</a>
+            <a href="upload.html">Resume AI</a>
+            <a href="tracking.html">Job Tracking</a>
+        </div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn btn-login">Logout</a>
+        </div>
+        <div class="menu-toggle" onclick="document.getElementById('navbar').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <div class="container fade-in" style="max-width: 1000px; padding-bottom: 5rem;">
+        <div class="wizard-steps">
+            <div class="step-node active" id="node1" onclick="goToStep(1)">1</div>
+            <div class="step-node" id="node2" onclick="goToStep(2)">2</div>
+            <div class="step-node" id="node3" onclick="goToStep(3)">3</div>
+            <div class="step-node" id="node4" onclick="goToStep(4)">4</div>
+        </div>
+
+        <div id="wizardContent">
+            <!-- Steps (unchanged structure) -->
+            <div class="step-container active" id="step1">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h1><i class="fas fa-user-tie"></i> Personal Information</h1>
+                            <p style="color: var(--text-muted);">Craft your profile identity.</p>
+                        </div>
+                        <div id="wizPhotoNode" style="width: 110px; height: 110px; border: 2px dashed var(--glass-border); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" onclick="document.getElementById('filePhoto').click()">
+                            <i class="fas fa-user-plus" style="font-size: 2rem;"></i>
+                        </div>
+                        <input type="file" id="filePhoto" style="display:none" accept="image/*">
+                    </div>
+                    <div id="persContainer" style="margin-top: 2rem;"></div>
+                    <div style="margin-top: 2.5rem;">
+                        <h3 style="margin-bottom: 1rem;"><i class="fas fa-plus"></i> Add Profile Info</h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.8rem;">
+                            <button class="pill-btn" onclick="addPers('LinkedIn', 'fab fa-linkedin')">+ LinkedIn</button>
+                            <button class="pill-btn" onclick="addPers('GitHub', 'fab fa-github')">+ GitHub</button>
+                            <button class="pill-btn" onclick="addPers('Website', 'fas fa-link')">+ Portfolio</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
+                        <button class="btn btn-primary" onclick="nextStep(2)">Next Step <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-container" id="step2">
+                <div class="card">
+                    <h1><i class="fas fa-stream"></i> Content Segments</h1>
+                    <div class="segment-grid">
+                        <div class="segment-tile" id="t-Summary" onclick="openSeg('Summary')"><i class="fas fa-user-edit"></i><h4>Summary</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Experience" onclick="openSeg('Experience')"><i class="fas fa-briefcase"></i><h4>Experience</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Education" onclick="openSeg('Education')"><i class="fas fa-university"></i><h4>Education</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Skills" onclick="openSeg('Skills')"><i class="fas fa-lightbulb"></i><h4>Skills</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Projects" onclick="openSeg('Projects')"><i class="fas fa-project-diagram"></i><h4>Projects</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Certifications" onclick="openSeg('Certifications')"><i class="fas fa-certificate"></i><h4>Certifications</h4><div class="check-badge">✓</div></div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
+                        <button class="btn btn-primary" onclick="nextStep(3)">Analyze <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-container" id="step3">
+                <div class="card">
+                    <h1><i class="fas fa-search-dollar"></i> ATS Analysis</h1>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Target Role</label>
+                        <input type="text" id="wizJD" placeholder="e.g. Software Engineer">
+                    </div>
+                    <button class="btn btn-outline" onclick="runAnalysis()"><i class="fas fa-circle-notch fa-spin" id="wizSpin" style="display:none"></i> Check Match</button>
+                    <div id="wizResult" style="display:none; margin-top: 1rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--primary);">
+                        <div style="display: flex; justify-content: space-between;"><h3>Score</h3><h2 id="wizScore" style="color:var(--primary)">0%</h2></div>
+                        <div id="wizSugg"></div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
+                        <button class="btn btn-primary" onclick="nextStep(4)">Finalize <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-container" id="step4">
+                <div class="card" style="text-align: center;">
+                    <h1><i class="fas fa-flag-checkered"></i> Ready to Save!</h1>
+                    <div class="form-group" style="max-width: 300px; margin: 2rem auto 1rem; text-align: left;">
+                        <label>Select Template</label>
+                        <select id="resumeTemplate">
+                            <option value="template-classic">Classic Professional</option>
+                            <option value="template-minimal">Modern ATS</option>
+                            <option value="template-creative">Creative Portfolio</option>
+                            <option value="template-executive">Executive Profile</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 300px; margin-inline: auto;">
+                        <button class="btn btn-primary" id="finalSave" onclick="saveWiz()">Save to Dashboard</button>
+                        <button class="btn btn-success" onclick="downloadWiz()">Preview & Download</button>
+                        <a href="dashboard.html" class="btn btn-outline">Exit</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Modal -->
+    <div id="wizEditor" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+        <div class="card" style="width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="wizEdTitle">Edit</h2>
+                <button onclick="closeEd()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div id="wizEdBody"></div>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between;">
+                <button class="btn btn-outline" id="wizEdAdd" onclick="addEdEntry()">+ Entry</button>
+                <button class="btn btn-primary" onclick="saveSeg()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Single global variable for state
+        let wizardState = {
+            id: new URLSearchParams(window.location.search).get('id'),
+            personal: [
+                { id: 'p1', key: 'Full Name', val: '', icon: 'fas fa-user' },
+                { id: 'p2', key: 'Role', val: '', icon: 'fas fa-id-card' },
+                { id: 'p3', key: 'Email Address', val: '', icon: 'fas fa-envelope' },
+                { id: 'p4', key: 'Phone Number', val: '', icon: 'fas fa-phone' }
+            ],
+            photo: '',
+            segments: {
+                Summary: { type: 'text', val: '' },
+                Experience: { type: 'list', items: [] },
+                Education: { type: 'list', items: [] },
+                Skills: { type: 'text', val: '' },
+                Projects: { type: 'list', items: [] },
+                Certifications: { type: 'list', items: [] }
+            },
+            role: ''
+        };
+
+        function renderPers() {
+            const cont = document.getElementById('persContainer');
+            cont.innerHTML = wizardState.personal.map(f => {
+                const isDefault = ['Full Name', 'Role', 'Email Address', 'Phone Number'].includes(f.key);
+                return `
+                <div class="reorder-item" data-id="${f.id}">
+                    <div class="reorder-handle"><i class="fas fa-grip-vertical"></i></div>
+                    <div style="flex: 1;">
+                        <input type="text" value="${f.val}" onchange="upPers('${f.id}', this.value)" placeholder="${f.key}">
+                    </div>
+                    ${!isDefault ? `<button onclick="remPers('${f.id}')" style="background:none; border:none; color:var(--error); cursor:pointer"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+            `}).join('');
+            new Sortable(cont, { handle: '.reorder-handle', animation: 150, onEnd: (evt) => {
+                const moved = wizardState.personal.splice(evt.oldIndex, 1)[0];
+                wizardState.personal.splice(evt.newIndex, 0, moved);
+            }});
+        }
+
+        function remPers(id) { wizardState.personal = wizardState.personal.filter(p => p.id !== id); renderPers(); }
+        function upPers(id, v) { const f = wizardState.personal.find(x => x.id === id); if(f) f.val = v; }
+        function addPers(k, i) { wizardState.personal.push({ id: 'c'+Date.now(), key: k, val: '', icon: i }); renderPers(); }
+
+        document.getElementById('filePhoto').onchange = (e) => {
+            const f = e.target.files[0];
+            if(f) { const r = new FileReader(); r.onload = (ev) => {
+                wizardState.photo = ev.target.result;
+                document.getElementById('wizPhotoNode').innerHTML = `<img src="${ev.target.result}" style="width:100%; height:100%; object-fit:cover">`;
+            }; r.readAsDataURL(f); }
+        };
+
+        let currSegKey = '';
+        function openSeg(k) {
+            currSegKey = k;
+            document.getElementById('wizEdTitle').innerText = k;
+            const b = document.getElementById('wizEdBody');
+            const s = wizardState.segments[k];
+            if(s.type === 'text') {
+                document.getElementById('wizEdAdd').style.display = 'none';
+                b.innerHTML = `<textarea id="edText" rows="10" placeholder="Write here...">${s.val}</textarea>`;
+            } else {
+                document.getElementById('wizEdAdd').style.display = 'block';
+                renderList();
+            }
+            document.getElementById('wizEditor').style.display = 'flex';
+        }
+
+        function renderList() {
+            const b = document.getElementById('wizEdBody');
+            const items = wizardState.segments[currSegKey].items;
+            const k = currSegKey;
+            let l1 = 'Organization', l2 = 'Post';
+            if (k === 'Education') { l1 = 'School'; l2 = 'Degree'; }
+            if (k === 'Projects') { l1 = 'Project Name'; }
+            if (k === 'Certifications') { l1 = 'Certificate Name'; l2 = 'Issuer'; }
+            
+            b.innerHTML = items.map((it, i) => `
+                <div class="editor-row">
+                    <div class="grid-2">
+                        <div class="form-group"><label>${l1}</label><input type="text" value="${it.title||''}" onchange="upIt(${i},'title',this.value)"></div>
+                        ${k !== 'Projects' ? `<div class="form-group"><label>${l2}</label><input type="text" value="${it.sub||''}" onchange="upIt(${i},'sub',this.value)"></div>` : ''}
+                    </div>
+                    ${k !== 'Projects' ? `
+                    <div class="date-grid">
+                        <div class="form-group"><label>Start</label><input type="date" value="${it.start||''}" onchange="upIt(${i},'start',this.value)"></div>
+                        <div class="form-group"><label>End</label><input type="date" value="${it.end||''}" onchange="upIt(${i},'end',this.value)"></div>
+                    </div>
+                    ` : ''}
+                    ${(k === 'Projects' || k === 'Experience' || k === 'Certifications') ? `
+                    <div class="grid-2">
+                        <div class="form-group"><label>Link (URL)</label><input type="url" value="${it.link||''}" onchange="upIt(${i},'link',this.value)" placeholder="https://..."></div>
+                        <div class="form-group">
+                            <label>Document Upload</label>
+                            <input type="file" onchange="const f=this.files[0]; if(f){const r=new FileReader();r.onload=(e)=>{upIt(${i},'doc',e.target.result); renderList();};r.readAsDataURL(f);}">
+                            ${it.doc ? '<small style="color:var(--success); margin-top:0.5rem; display:block;"><i class="fas fa-check"></i> File successfully attached</small>' : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="form-group"><label>Details</label><textarea onchange="upIt(${i},'desc',this.value)">${it.desc||''}</textarea></div>
+                    <div style="text-align: right;"><i class="fas fa-trash" style="color:var(--error); cursor:pointer" onclick="remIt(${i})"></i></div>
+                </div>
+            `).join('') || '<p style="text-align:center;">Empty</p>';
+        }
+
+        function upIt(i, k, v) { wizardState.segments[currSegKey].items[i][k] = v; }
+        function remIt(i) { wizardState.segments[currSegKey].items.splice(i,1); renderList(); }
+        function addEdEntry() { wizardState.segments[currSegKey].items.push({}); renderList(); }
+
+        function saveSeg() {
+            const s = wizardState.segments[currSegKey];
+            if(s.type === 'text') s.val = document.getElementById('edText').value;
+            const active = (s.type === 'text' && s.val) || (s.type === 'list' && s.items.length > 0);
+            document.getElementById('t-' + currSegKey).classList.toggle('active', active);
+            closeEd();
+        }
+        function closeEd() { document.getElementById('wizEditor').style.display = 'none'; }
+        
+        function nextStep(s) { goToStep(s); }
+        function goToStep(s) {
+            document.querySelectorAll('.step-container').forEach(c => c.classList.remove('active'));
+            document.getElementById('step' + s).classList.add('active');
+            document.querySelectorAll('.step-node').forEach((n, i) => n.classList.toggle('active', i < s));
+            window.scrollTo(0, 0);
+        }
+
+        async function runAnalysis() {
+            const jd = document.getElementById('wizJD').value;
+            if(!jd) return alert("Enter role");
+            wizardState.role = jd;
+            document.getElementById('wizSpin').style.display = 'inline-block';
+            let txt = wizardState.segments.Summary.val + " " + wizardState.segments.Skills.val + " " + JSON.stringify(wizardState.segments.Experience.items);
+            const res = await fetch('/api/resume/analyze', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resumeText: txt, jobDescription: jd })
+            });
+            const data = await res.json();
+            document.getElementById('wizSpin').style.display = 'none';
+            document.getElementById('wizResult').style.display = 'block';
+            document.getElementById('wizScore').innerText = data.fitScore + "%";
+            document.getElementById('wizSugg').innerHTML = data.suggestions.map(s => `<li>${s}</li>`).join('');
+        }
+
+        async function saveWiz() {
+            const b = document.getElementById('finalSave');
+            b.innerText = 'Saving...';
+            const payload = {
+                id: wizardState.id,
+                fullName: (wizardState.personal.find(f => f.key === 'Full Name') || {}).val,
+                email: (wizardState.personal.find(f => f.key === 'Email Address') || {}).val,
+                phone: (wizardState.personal.find(f => f.key === 'Phone Number') || {}).val,
+                targetRole: wizardState.role,
+                photoUrl: wizardState.photo,
+                profileData: JSON.stringify(wizardState)
+            };
+            const res = await fetch('/api/resume/save', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) { alert("Saved!"); location.href = 'dashboard.html'; }
+            else { alert("Failed"); b.innerText = 'Save to Dashboard'; }
+        }
+
+        function downloadWiz() {
+            const area = document.getElementById('printArea');
+            const tmpl = document.getElementById('resumeTemplate').value;
+            area.className = `resume-preview ${tmpl}`;
+            const p = wizardState.personal.reduce((a,f)=>{a[f.key]=f.val; return a;}, {});
+            area.innerHTML = `
+                <div class="resume-header">
+                    <div>
+                        <h1>${p['Full Name']||'Name'}</h1>
+                        <p>${p['Email Address']||''} | ${p['Phone Number']||''}</p>
+                    </div>
+                    ${wizardState.photo ? `<img src="${wizardState.photo}" class="resume-photo">` : ''}
+                </div>
+                ${wizardState.segments.Summary.val ? `<div class="resume-section"><h3>Summary</h3><p>${wizardState.segments.Summary.val}</p></div>` : ''}
+                ${wizardState.segments.Experience.items.length ? `<div class="resume-section"><h3>Experience</h3>${wizardState.segments.Experience.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Projects.items.length ? `<div class="resume-section"><h3>Projects</h3>${wizardState.segments.Projects.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.link?` | <a href="${it.link}">${it.link}</a>`:''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Education.items.length ? `<div class="resume-section"><h3>Education</h3>${wizardState.segments.Education.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Skills.val ? `<div class="resume-section"><h3>Skills</h3><p class="item-desc">${wizardState.segments.Skills.val}</p></div>` : ''}
+                ${wizardState.segments.Certifications && wizardState.segments.Certifications.items.length ? `<div class="resume-section"><h3>Certifications</h3>${wizardState.segments.Certifications.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+            `;
+            window.print();
+        }
+
+        async function init() {
+            if(wizardState.id) {
+                const res = await fetch(`/api/resume/${wizardState.id}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    if(data.profileData) {
+                        wizardState = JSON.parse(data.profileData);
+                        wizardState.id = data.id;
+                        document.getElementById('wizJD').value = wizardState.role || '';
+                        if(wizardState.photo) document.getElementById('wizPhotoNode').innerHTML = `<img src="${wizardState.photo}" style="width:100%; height:100%; object-fit:cover">`;
+                        renderPers();
+                        Object.keys(wizardState.segments).forEach(k=>{
+                            const s = wizardState.segments[k];
+                            if(s.val || (s.items && s.items.length)) document.getElementById('t-'+k).classList.add('active');
+                        });
+                    }
+                }
+            }
+            renderPers();
+        }
+        init();
+    </script>
+</body>
+</html>

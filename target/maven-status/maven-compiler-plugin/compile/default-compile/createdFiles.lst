@@ -1,0 +1,9 @@
+com\autoresume\App.class
+com\autoresume\controller\JobController.class
+com\autoresume\model\JobApplication.class
+com\autoresume\repository\JobApplicationRepository.class
+com\autoresume\model\Resume.class
+com\autoresume\service\AnalysisService.class
+com\autoresume\AutoResumeAiApplication.class
+com\autoresume\controller\ResumeController.class
+com\autoresume\repository\ResumeRepository.class

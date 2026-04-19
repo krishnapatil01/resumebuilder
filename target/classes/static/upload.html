@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analysis | AutoResume AI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .drag-area {
+            border: 2px dashed var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .drag-area:hover, .drag-area.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .result-box {
+            display: none;
+            margin-top: 2rem;
+        }
+        .keyword-tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            margin: 0.2rem;
+            font-size: 0.85rem;
+        }
+        .keyword-matched { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .keyword-missing { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body>
+    <nav id="navbar">
+        <a href="index.html" class="logo">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="8" fill="#2d1a47"/>
+                <path d="M10 12C10 10.8954 10.8954 10 12 10H28C29.1046 10 30 10.8954 30 12V28C30 29.1046 29.1046 30 28 30H12C10.8954 30 10 29.1046 10 28V12Z" fill="#ff6b6b"/>
+                <path d="M15 15H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 20H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                <path d="M15 25H21" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            AutoResume
+        </a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="builder.html">Resume Builder</a>
+            <a href="upload.html" class="active">Resume AI</a>
+            <a href="tracking.html">Job Tracking</a>
+        </div>
+        <div class="nav-actions">
+            <a href="index.html" class="btn btn-login">Logout</a>
+        </div>
+        <div class="menu-toggle" onclick="document.getElementById('navbar').classList.toggle('open')">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <div class="container fade-in">
+        <div class="card" style="margin-bottom: 2rem;">
+            <h1><i class="fas fa-search-dollar"></i> ATS Optimizer & JD Match</h1>
+            <p style="color: var(--text-muted);">Upload your resume and paste the job description to see how well you fit.</p>
+        </div>
+
+        <div class="grid-2">
+            <div>
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h3>Step 1: Upload Resume</h3>
+                    <div class="drag-area" id="dropArea">
+                        <i class="fas fa-file-pdf" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                        <p id="fileNameDisplay">Drag & Drop PDF/DOCX or click to browse</p>
+                        <input type="file" id="resumeFile" hidden accept=".pdf,.docx">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Step 2: Job Description</h3>
+                    <div class="form-group">
+                        <textarea id="jdInput" rows="10" placeholder="Paste the job requirements here..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" id="analyzeBtn">
+                        <i class="fas fa-wand-sparkles"></i> Analyze Fit
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" id="analysisResult">
+                <div style="text-align: center; padding: 4rem 1rem;" id="placeholderText">
+                    <i class="fas fa-chart-pie" style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;"></i>
+                    <h3>Analysis Result</h3>
+                    <p style="color: var(--text-muted);">Configure inputs on the left to generate insights.</p>
+                </div>
+
+                <div class="result-box" id="resultContent">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem;" id="scoreDisplay">0%</div>
+                        <p style="color: var(--text-muted);">ATS Compatibility Score</p>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4>Matched Keywords</h4>
+                        <div id="matchedContainer" style="margin-top: 0.5rem;"></div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4>Missing Skills (Gaps)</h4>
+                        <div id="missingContainer" style="margin-top: 0.5rem;"></div>
+                    </div>
+
+                    <div class="card" style="background: rgba(251, 191, 36, 0.05); border-color: rgba(251, 191, 36, 0.2);">
+                        <h4><i class="fas fa-lightbulb" style="color: var(--warning);"></i> Optimization Suggestion</h4>
+                        <p id="suggestionText" style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted);"></p>
+                    </div>
+                    
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 1.5rem;" onclick="location.href='tracking.html'">
+                        Add to Job Tracker
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('resumeFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        let extractedText = "";
+
+        dropArea.onclick = () => fileInput.click();
+
+        fileInput.onchange = async ({target}) => {
+            const file = target.files[0];
+            if (!file) return;
+            fileNameDisplay.innerText = "Uploading: " + file.name;
+            
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch('/api/resume/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                extractedText = data.text;
+                fileNameDisplay.innerText = "Ready: " + file.name;
+            } catch (err) {
+                alert("Upload failed");
+            }
+        };
+
+        document.getElementById('analyzeBtn').onclick = async () => {
+            const jdText = document.getElementById('jdInput').value;
+            if (!jdText) return alert("Please paste Job Description");
+
+            try {
+                const res = await fetch('/api/resume/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resumeText: extractedText,
+                        jobDescription: jdText
+                    })
+                });
+                const data = await res.json();
+                showResults(data);
+            } catch (err) {
+                alert("Analysis failed");
+            }
+        };
+
+        function showResults(data) {
+            document.getElementById('placeholderText').style.display = 'none';
+            document.getElementById('resultContent').style.display = 'block';
+            
+            const score = data.fitScore;
+            const scoreEl = document.getElementById('scoreDisplay');
+            scoreEl.innerText = score + "%";
+            
+            if(score > 70) scoreEl.style.color = 'var(--success)';
+            else if(score > 40) scoreEl.style.color = 'var(--warning)';
+            else scoreEl.style.color = 'var(--error)';
+
+            // Matched
+            const matchedContainer = document.getElementById('matchedContainer');
+            matchedContainer.innerHTML = data.matchedKeywords.length > 0 
+                ? data.matchedKeywords.map(k => `<span class="keyword-tag keyword-matched">${k}</span>`).join('')
+                : '<p style="font-size: 0.8rem; color: var(--text-muted);">No major keyword matches found.</p>';
+
+            // Missing
+            const missingContainer = document.getElementById('missingContainer');
+            missingContainer.innerHTML = data.missingSkills.length > 0
+                ? data.missingSkills.map(k => `<span class="keyword-tag keyword-missing">${k}</span>`).join('')
+                : '<p style="font-size: 0.8rem; color: var(--text-muted);">No critical skills missing!</p>';
+
+            // New: Structural Score Display
+            const suggestionText = document.getElementById('suggestionText');
+            let tips = "";
+            
+            if (data.breakdown) {
+                tips += `
+                    <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Score Breakdown:</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+                            ${Object.entries(data.breakdown).map(([key, val]) => `
+                                <div>${key}: <span style="font-weight:700; color:var(--primary);">${val}</span></div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if(data.suggestions && data.suggestions.length > 0) {
+                tips += `<h4><i class="fas fa-list-check"></i> Critical Improvements:</h4>
+                       <ul style="margin-left: 1.5rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                          ${data.suggestions.map(s => `<li style="margin-bottom:0.4rem;">${s}</li>`).join('')}
+                       </ul>`;
+            } else if (score > 85) {
+                tips += "<p><strong>Excellent Match!</strong> Your resume is highly optimized for this role. Focus on preparing specific examples (STAR method) for your interview.</p>";
+            } else {
+                tips += "<p><strong>Good Foundation!</strong> Consider adding more industry-specific certifications to stand out further.</p>";
+            }
+            suggestionText.innerHTML = tips;
+
+            // Save basic info for tracker
+            window.lastAnalysis = data;
+        }
+    </script>
+</body>
+</html>
