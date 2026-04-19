@@ -144,7 +144,9 @@ Migration to MySQL/PostgreSQL
 Interview preparation module
 👨‍💻 Author
 
-Krishna Vijay Patil
+Krishna Patil
+Shruti Ghadge
+Mona More
 📍 Pune, Maharashtra
 
 ⭐ Support
