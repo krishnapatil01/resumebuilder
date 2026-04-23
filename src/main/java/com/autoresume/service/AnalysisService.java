@@ -87,7 +87,7 @@ public class AnalysisService {
         double totalScore = keywordScore + skillsScore + experienceScore + educationScore + actionVerbScore + formattingScore + completenessScore;
         totalScore = Math.round(totalScore * 10.0) / 10.0;
 
-        List<String> suggestions = generateSuggestions(normalizedResume, missing, matched, actionVerbsFound, quantifiedCount, formattingScore > 0);
+        List<String> suggestions = generateSuggestions(normalizedResume, missing, matched, actionVerbsFound, quantifiedCount, formattingScore > 0, normalizedJd);
 
         Map<String, Object> result = new HashMap<>();
         result.put("fitScore", totalScore);
@@ -159,34 +159,48 @@ public class AnalysisService {
         return Arrays.stream(actionVerbs).filter(v -> lowerText.contains(v)).count();
     }
 
-    private List<String> generateSuggestions(String text, Set<String> missing, Set<String> matched, long actionVerbs, long quantified, boolean hasHeaders) {
+    private List<String> generateSuggestions(String text, Set<String> missing, Set<String> matched, long actionVerbs, long quantified, boolean hasHeaders, String jdText) {
         List<String> suggestions = new ArrayList<>();
+        String title = jdText.toLowerCase();
         
         if (!missing.isEmpty()) {
             String keywordsToAdd = missing.stream()
                     .limit(6)
                     .collect(Collectors.joining(", "));
-            suggestions.add("<b>Keyword Alignment:</b> Missing critical terms like [" + keywordsToAdd + "]. Incorporate these naturally into your experience bullets.");
+            suggestions.add("<b>Keyword Alignment:</b> Missing crucial ATS terms like [" + keywordsToAdd + "]. We recommend weaving these directly into your professional experience summaries instead of arbitrarily listing them.");
         }
         
         if (quantified < 4) {
-            suggestions.add("<b>Quantify Impact:</b> Your resume is low on metrics. Use numbers (%, $, count) to show results, e.g., 'Boosted efficiency by 25%' instead of 'Improved efficiency'.");
+            suggestions.add("<b>Quantify Impact:</b> Modern ATS algorithms score resumes higher when achievements have measurable data. Use metrics (e.g., %, $, volume, time saved) like 'Boosted efficiency by 25%' rather than simply 'Improved efficiency'.");
         }
         
         if (actionVerbs < 8) {
-            suggestions.add("<b>Stronger Action Verbs:</b> Use more powerful starter verbs like 'Spearheaded', 'Architected', or 'Pioneered' to describe your tasks.");
+            suggestions.add("<b>Stronger Action Verbs:</b> Move away from passive phrasing. Start your bullet points with dynamic verbs like 'Architected', 'Spearheaded', 'Optimized', or 'Designed'.");
+        }
+
+        // Tailored role suggestions
+        if (title.contains("data engineer") || title.contains("data")) {
+            suggestions.add("<b>Data Engineering Pro-Tip:</b> Ensure you clearly state the scale of data you have manipulated (e.g., 'Processed 5TB of log data daily') and explicitly name your ETL orchestration tools (like Airflow or dbt).");
+        } else if (title.contains("java") || title.contains("spring") || title.contains("j2ee")) {
+            suggestions.add("<b>Java Ecosystem Focus:</b> Hiring managers look for testing and CI/CD competency. Make sure to specify your experience with JUnit, Mockito, Jenkins, or GitHub Actions if you have it.");
+        } else if (title.contains("python") || title.contains("backend") || title.contains("django")) {
+            suggestions.add("<b>Backend Architecture:</b> Highlight your experience with building RESTful APIs or microservices, and ensure your database optimization expertise (SQL vs NoSQL trade-offs) is clear.");
+        } else if (title.contains("cybersecurity") || title.contains("security") || title.contains("infosec")) {
+            suggestions.add("<b>Security Expertise:</b> Mention standard compliance frameworks (ISO, SOC2, NIST) you are familiar with, and highlight specific vulnerability scanning or penetration testing methodologies.");
+        } else if (title.contains("frontend") || title.contains("mern") || title.contains("react") || title.contains("node")) {
+            suggestions.add("<b>Frontend & Fullstack Optimization:</b> Mention state management patterns, application performance metrics (like Core Web Vitals), and your approach to responsive, accessible design.");
         }
 
         if (!hasHeaders) {
-            suggestions.add("<b>Section Headers:</b> Ensure you have clearly labeled sections like 'Professional Experience', 'Skills', and 'Education' for ATS readability.");
+            suggestions.add("<b>System Parsability:</b> ATS systems look for standard markers for sections. Keep names traditional: 'Experience', 'Education', 'Skills'.");
         }
         
         if (!text.toLowerCase().contains("certification") && !text.toLowerCase().contains("certificate")) {
-            suggestions.add("<b>Professional Credibility:</b> Adding industry certifications or relevant courses can significantly increase your technical score.");
+            suggestions.add("<b>Skill Validation:</b> Certifications often act as hard filters for ATS mapping. If you have valid vendor certifications (e.g., AWS, Oracle, CompTIA), ensure they are in a dedicated 'Certifications' block.");
         }
 
-        if (!text.toLowerCase().contains("linkedin.com")) {
-            suggestions.add("<b>Contact Information:</b> Add your LinkedIn profile URL and ensuring your email/phone are prominently displayed.");
+        if (!text.toLowerCase().contains("linkedin.com") && !text.toLowerCase().contains("github.com")) {
+            suggestions.add("<b>Digital Footprint:</b> Add your LinkedIn or GitHub profile URL. ATS tools often crawl these links to verify your digital footprint.");
         }
 
         return suggestions;
@@ -212,7 +226,7 @@ public class AnalysisService {
             "the", "and", "a", "or", "in", "to", "for", "with", "is", "at", "of", "on", "from", "by", "an", "be", "as", "it", 
             "this", "that", "was", "were", "using", "used", "working", "knowledge", "strong", "experience", "ability",
             "excellent", "highly", "motivated", "skills", "team", "responsibilities", "responsible", "proven", "proficient",
-            "familiar", "etc", "i", "we", "my", "our", "their", "will", "would"
+            "familiar", "etc", "i", "we", "my", "our", "their", "will", "would", "your", "can", "have", "has", "had", "which"
         ));
         
         return Arrays.stream(words)

@@ -120,6 +120,23 @@
                     <button class="btn btn-outline" style="width: 100%; margin-top: 1.5rem;" onclick="location.href='tracking.html'">
                         Add to Job Tracker
                     </button>
+
+                    <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                        <h4 style="margin-bottom: 0.8rem; font-size: 0.9rem;">Tailor Your Resume for this Role</h4>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="editRoleSelect" style="flex: 1; padding: 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--glass-border);">
+                                <option value="">Select a job role...</option>
+                                <option value="data-engineer">Data Engineer</option>
+                                <option value="java-developer">Java Developer</option>
+                                <option value="python-developer">Python Developer</option>
+                                <option value="cybersecurity">Cybersecurity</option>
+                                <option value="mern-stack">MERN Stack</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="const r = document.getElementById('editRoleSelect').value; if(r) { localStorage.setItem('uploadText', window.extractedText || extractedText || ''); location.href='builder.html?role='+r+'&fromUpload=true'; } else alert('Please select a role to edit.');">
+                                Edit
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

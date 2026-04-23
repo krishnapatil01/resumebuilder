@@ -173,11 +173,12 @@
                     <h1><i class="fas fa-stream"></i> Content Segments</h1>
                     <div class="segment-grid">
                         <div class="segment-tile" id="t-Summary" onclick="openSeg('Summary')"><i class="fas fa-user-edit"></i><h4>Summary</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Skills" onclick="openSeg('Skills')"><i class="fas fa-lightbulb"></i><h4>Technical Skills</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Projects" onclick="openSeg('Projects')"><i class="fas fa-project-diagram"></i><h4>Projects</h4><div class="check-badge">✓</div></div>
                         <div class="segment-tile" id="t-Experience" onclick="openSeg('Experience')"><i class="fas fa-briefcase"></i><h4>Experience</h4><div class="check-badge">✓</div></div>
                         <div class="segment-tile" id="t-Education" onclick="openSeg('Education')"><i class="fas fa-university"></i><h4>Education</h4><div class="check-badge">✓</div></div>
-                        <div class="segment-tile" id="t-Skills" onclick="openSeg('Skills')"><i class="fas fa-lightbulb"></i><h4>Skills</h4><div class="check-badge">✓</div></div>
-                        <div class="segment-tile" id="t-Projects" onclick="openSeg('Projects')"><i class="fas fa-project-diagram"></i><h4>Projects</h4><div class="check-badge">✓</div></div>
                         <div class="segment-tile" id="t-Certifications" onclick="openSeg('Certifications')"><i class="fas fa-certificate"></i><h4>Certifications</h4><div class="check-badge">✓</div></div>
+                        <div class="segment-tile" id="t-Achievements" onclick="openSeg('Achievements')"><i class="fas fa-trophy"></i><h4>Achievements</h4><div class="check-badge">✓</div></div>
                     </div>
                     <div style="display: flex; justify-content: flex-end; margin-top: 3rem;">
                         <button class="btn btn-primary" onclick="nextStep(3)">Analyze <i class="fas fa-arrow-right"></i></button>
@@ -253,11 +254,12 @@
             photo: '',
             segments: {
                 Summary: { type: 'text', val: '' },
-                Experience: { type: 'list', items: [] },
-                Education: { type: 'list', items: [] },
                 Skills: { type: 'text', val: '' },
                 Projects: { type: 'list', items: [] },
-                Certifications: { type: 'list', items: [] }
+                Experience: { type: 'list', items: [] },
+                Education: { type: 'list', items: [] },
+                Certifications: { type: 'list', items: [] },
+                Achievements: { type: 'list', items: [] }
             },
             role: ''
         };
@@ -299,26 +301,47 @@
             document.getElementById('wizEdTitle').innerText = k;
             const b = document.getElementById('wizEdBody');
             const s = wizardState.segments[k];
+            
+            let suggHtml = '';
+            if (wizardState.suggestions && wizardState.suggestions[k]) {
+                suggHtml = `<div style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;"><i class="fas fa-lightbulb"></i> Suggested for ${wizardState.role}</h4>
+                    <p style="font-size: 0.9rem; color: #ddd; margin-bottom: 0.5rem; white-space: pre-wrap;">${wizardState.suggestions[k]}</p>
+                    <button onclick="applySugg('${k}')" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Use Suggestion</button>
+                </div>`;
+            }
+
             if(s.type === 'text') {
                 document.getElementById('wizEdAdd').style.display = 'none';
-                b.innerHTML = `<textarea id="edText" rows="10" placeholder="Write here...">${s.val}</textarea>`;
+                b.innerHTML = suggHtml + `<textarea id="edText" rows="10" placeholder="Write here...">${s.val}</textarea>`;
             } else {
                 document.getElementById('wizEdAdd').style.display = 'block';
+                b.innerHTML = suggHtml + `<div id="listContainer"></div>`;
                 renderList();
             }
             document.getElementById('wizEditor').style.display = 'flex';
         }
 
+        window.applySugg = function(k) {
+            if (wizardState.segments[k].type === 'text') {
+                document.getElementById('edText').value = wizardState.suggestions[k];
+            } else if (k === 'Certifications') {
+                wizardState.segments[k].items.push({ title: wizardState.suggestions[k], sub: 'Certification Body', desc: '' });
+                renderList();
+            }
+        };
+
         function renderList() {
-            const b = document.getElementById('wizEdBody');
+            const container = document.getElementById('listContainer') || document.getElementById('wizEdBody');
             const items = wizardState.segments[currSegKey].items;
             const k = currSegKey;
             let l1 = 'Organization', l2 = 'Post';
             if (k === 'Education') { l1 = 'School'; l2 = 'Degree'; }
             if (k === 'Projects') { l1 = 'Project Name'; }
             if (k === 'Certifications') { l1 = 'Certificate Name'; l2 = 'Issuer'; }
+            if (k === 'Achievements') { l1 = 'Achievement/Award'; l2 = 'Issuer/Org'; }
             
-            b.innerHTML = items.map((it, i) => `
+            container.innerHTML = items.map((it, i) => `
                 <div class="editor-row">
                     <div class="grid-2">
                         <div class="form-group"><label>${l1}</label><input type="text" value="${it.title||''}" onchange="upIt(${i},'title',this.value)"></div>
@@ -330,7 +353,7 @@
                         <div class="form-group"><label>End</label><input type="date" value="${it.end||''}" onchange="upIt(${i},'end',this.value)"></div>
                     </div>
                     ` : ''}
-                    ${(k === 'Projects' || k === 'Experience' || k === 'Certifications') ? `
+                    ${(k === 'Projects' || k === 'Experience' || k === 'Certifications' || k === 'Achievements') ? `
                     <div class="grid-2">
                         <div class="form-group"><label>Link (URL)</label><input type="url" value="${it.link||''}" onchange="upIt(${i},'link',this.value)" placeholder="https://..."></div>
                         <div class="form-group">
@@ -372,7 +395,19 @@
             if(!jd) return alert("Enter role");
             wizardState.role = jd;
             document.getElementById('wizSpin').style.display = 'inline-block';
-            let txt = wizardState.segments.Summary.val + " " + wizardState.segments.Skills.val + " " + JSON.stringify(wizardState.segments.Experience.items);
+            let textBuild = [];
+            if (wizardState.segments.Summary.val) textBuild.push("Summary\n" + wizardState.segments.Summary.val);
+            if (wizardState.segments.Skills.val) textBuild.push("Skills\n" + wizardState.segments.Skills.val);
+            if (wizardState.segments.Experience.items.length) textBuild.push("Experience\n" + JSON.stringify(wizardState.segments.Experience.items));
+            if (wizardState.segments.Education.items.length) textBuild.push("Education\n" + JSON.stringify(wizardState.segments.Education.items));
+            if (wizardState.segments.Projects.items.length) textBuild.push("Projects\n" + JSON.stringify(wizardState.segments.Projects.items));
+            if (wizardState.segments.Certifications.items.length) textBuild.push("Certifications\n" + JSON.stringify(wizardState.segments.Certifications.items));
+            if (wizardState.segments.Achievements && wizardState.segments.Achievements.items.length) textBuild.push("Achievements\n" + JSON.stringify(wizardState.segments.Achievements.items));
+            
+            wizardState.personal.forEach(p => textBuild.push(p.val));
+
+            let txt = textBuild.join("\n ");
+            
             const res = await fetch('/api/resume/analyze', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ resumeText: txt, jobDescription: jd })
@@ -417,17 +452,110 @@
                     </div>
                     ${wizardState.photo ? `<img src="${wizardState.photo}" class="resume-photo">` : ''}
                 </div>
-                ${wizardState.segments.Summary.val ? `<div class="resume-section"><h3>Summary</h3><p>${wizardState.segments.Summary.val}</p></div>` : ''}
-                ${wizardState.segments.Experience.items.length ? `<div class="resume-section"><h3>Experience</h3>${wizardState.segments.Experience.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
-                ${wizardState.segments.Projects.items.length ? `<div class="resume-section"><h3>Projects</h3>${wizardState.segments.Projects.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.link?` | <a href="${it.link}">${it.link}</a>`:''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
-                ${wizardState.segments.Education.items.length ? `<div class="resume-section"><h3>Education</h3>${wizardState.segments.Education.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
-                ${wizardState.segments.Skills.val ? `<div class="resume-section"><h3>Skills</h3><p class="item-desc">${wizardState.segments.Skills.val}</p></div>` : ''}
+                ${wizardState.segments.Summary && wizardState.segments.Summary.val ? `<div class="resume-section"><h3>Summary</h3><p>${wizardState.segments.Summary.val}</p></div>` : ''}
+                ${wizardState.segments.Skills && wizardState.segments.Skills.val ? `<div class="resume-section"><h3>Technical Skills</h3><p class="item-desc">${wizardState.segments.Skills.val}</p></div>` : ''}
+                ${wizardState.segments.Projects && wizardState.segments.Projects.items.length ? `<div class="resume-section"><h3>Projects</h3>${wizardState.segments.Projects.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.link?` | <a href="${it.link}">${it.link}</a>`:''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Experience && wizardState.segments.Experience.items.length ? `<div class="resume-section"><h3>Experience</h3>${wizardState.segments.Experience.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Education && wizardState.segments.Education.items.length ? `<div class="resume-section"><h3>Education</h3>${wizardState.segments.Education.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span><span class="item-date">${it.start} to ${it.end}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
                 ${wizardState.segments.Certifications && wizardState.segments.Certifications.items.length ? `<div class="resume-section"><h3>Certifications</h3>${wizardState.segments.Certifications.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
+                ${wizardState.segments.Achievements && wizardState.segments.Achievements.items.length ? `<div class="resume-section"><h3>Achievements / Additional</h3>${wizardState.segments.Achievements.items.map(it=>`<div class="resume-item"><div class="item-header"><span class="item-title">${it.title}</span><span class="item-sub">${it.sub ? ' - ' + it.sub : ''}</span></div><p class="item-desc">${it.desc}</p></div>`).join('')}</div>` : ''}
             `;
             window.print();
         }
 
+        const roleTemplates = {
+            'data-engineer': {
+                role: 'Data Engineer',
+                segments: {
+                    Summary: { type: 'text', val: '' },
+                    Skills: { type: 'text', val: '' },
+                    Projects: { type: 'list', items: [] },
+                    Experience: { type: 'list', items: [] },
+                    Education: { type: 'list', items: [] },
+                    Certifications: { type: 'list', items: [] },
+                    Achievements: { type: 'list', items: [] }
+                },
+                suggestions: {
+                    Summary: 'Data Engineer skilled in Python, SQL, and ETL pipeline development. Experienced in building scalable data pipelines using Apache Spark and cloud platforms like AWS. Strong understanding of data warehousing, data modeling, and big data technologies.',
+                    Skills: 'Languages: Python, SQL, Java\nTools: Apache Spark, Hadoop, Kafka\nDatabases: MySQL, PostgreSQL, MongoDB\nCloud: AWS (S3, EC2), GCP\nOther: ETL, Data Modeling, Airflow',
+                    Certifications: 'AWS Certified Data Engineer, Google Data Engineering Certification'
+                }
+            },
+            'java-developer': {
+                role: 'Java Developer',
+                segments: {
+                    Summary: { type: 'text', val: '' },
+                    Skills: { type: 'text', val: '' },
+                    Projects: { type: 'list', items: [] },
+                    Experience: { type: 'list', items: [] },
+                    Education: { type: 'list', items: [] },
+                    Certifications: { type: 'list', items: [] },
+                    Achievements: { type: 'list', items: [] }
+                },
+                suggestions: {
+                    Summary: 'Java Developer with strong expertise in Core Java, Spring Boot, and microservices architecture. Experienced in designing scalable REST APIs and working with relational databases. Proficient in OOP, multithreading, and backend optimization.',
+                    Skills: 'Languages: Java\nFrameworks: Spring Boot, Hibernate\nWeb Technologies: REST APIs, Microservices\nDatabases: MySQL, PostgreSQL\nTools: Maven, Git, Docker\nConcepts: OOP, JVM, Multithreading',
+                    Certifications: 'Oracle Certified Professional Java Programmer, Spring Professional Certification'
+                }
+            },
+            'python-developer': {
+                role: 'Python Developer',
+                segments: {
+                    Summary: { type: 'text', val: '' },
+                    Skills: { type: 'text', val: '' },
+                    Projects: { type: 'list', items: [] },
+                    Experience: { type: 'list', items: [] },
+                    Education: { type: 'list', items: [] },
+                    Certifications: { type: 'list', items: [] },
+                    Achievements: { type: 'list', items: [] }
+                },
+                suggestions: {
+                    Summary: 'Python Developer with experience in backend development, automation, and API development. Skilled in Django/Flask frameworks and data processing using Python libraries.',
+                    Skills: 'Languages: Python\nFrameworks: Django, Flask\nLibraries: Pandas, NumPy\nDatabases: MySQL, MongoDB\nTools: Git, Docker\nConcepts: REST APIs, Automation',
+                    Certifications: 'Certified Associate in Python Programming (PCAP), AWS Certified Developer'
+                }
+            },
+            'cybersecurity': {
+                role: 'Cybersecurity Analyst',
+                segments: {
+                    Summary: { type: 'text', val: '' },
+                    Skills: { type: 'text', val: '' },
+                    Projects: { type: 'list', items: [] },
+                    Experience: { type: 'list', items: [] },
+                    Education: { type: 'list', items: [] },
+                    Certifications: { type: 'list', items: [] },
+                    Achievements: { type: 'list', items: [] }
+                },
+                suggestions: {
+                    Summary: 'Cybersecurity enthusiast with hands-on experience in penetration testing, vulnerability assessment, and network security. Skilled in identifying and mitigating security threats using industry tools.',
+                    Skills: 'Concepts: Network Security, Cryptography, Penetration Testing, Ethical Hacking\nTools: Wireshark, Nmap, Metasploit, SIEM',
+                    Certifications: 'CompTIA Security+, Certified Ethical Hacker (CEH), CISSP'
+                }
+            },
+            'mern-stack': {
+                role: 'MERN Stack Developer',
+                segments: {
+                    Summary: { type: 'text', val: '' },
+                    Skills: { type: 'text', val: '' },
+                    Projects: { type: 'list', items: [] },
+                    Experience: { type: 'list', items: [] },
+                    Education: { type: 'list', items: [] },
+                    Certifications: { type: 'list', items: [] },
+                    Achievements: { type: 'list', items: [] }
+                },
+                suggestions: {
+                    Summary: 'Full Stack Developer specializing in MERN stack (MongoDB, Express.js, React.js, Node.js). Experienced in building scalable web applications and RESTful APIs.',
+                    Skills: 'Frontend: React.js, HTML, CSS, JavaScript\nBackend: Node.js, Express.js\nDatabase: MongoDB\nTools: Git, Docker\nConcepts: REST APIs, Authentication',
+                    Certifications: 'Meta Front-End Developer Certificate, IBM Full Stack Software Developer Professional Certificate'
+                }
+            }
+        };
+
         async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roleParam = urlParams.get('role');
+            const fromUpload = urlParams.get('fromUpload');
+
             if(wizardState.id) {
                 const res = await fetch(`/api/resume/${wizardState.id}`);
                 if(res.ok) {
@@ -444,7 +572,43 @@
                         });
                     }
                 }
+            } else if (roleParam && roleTemplates[roleParam]) {
+                const tmpl = roleTemplates[roleParam];
+                wizardState.role = tmpl.role;
+                const rField = wizardState.personal.find(f => f.key === 'Role');
+                if(rField) rField.val = tmpl.role;
+                document.getElementById('wizJD').value = tmpl.role;
+                wizardState.segments = JSON.parse(JSON.stringify(tmpl.segments));
+                wizardState.suggestions = tmpl.suggestions;
+                
+                Object.keys(wizardState.segments).forEach(k=>{
+                    const s = wizardState.segments[k];
+                    if(s.val || (s.items && s.items.length)) document.getElementById('t-'+k).classList.add('active');
+                });
             }
+
+            if (fromUpload === 'true') {
+                const text = localStorage.getItem('uploadText') || '';
+                
+                // Extra basic regex for email and phone
+                const emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+                if (emailMatch) {
+                    const eField = wizardState.personal.find(f => f.key === 'Email Address');
+                    if(eField) eField.val = emailMatch[0];
+                }
+                const phoneMatch = text.match(/(\+?\d[\d -]{8,12}\d)/);
+                if (phoneMatch) {
+                    const pField = wizardState.personal.find(f => f.key === 'Phone Number');
+                    if(pField) pField.val = phoneMatch[0];
+                }
+                // Naive name extraction (first non-empty line)
+                const lines = text.split('\\n').filter(l => l.trim().length > 0);
+                if (lines.length > 0 && lines[0].length < 60) {
+                    const nField = wizardState.personal.find(f => f.key === 'Full Name');
+                    if(nField && !nField.val) nField.val = lines[0].trim();
+                }
+            }
+
             renderPers();
         }
         init();
